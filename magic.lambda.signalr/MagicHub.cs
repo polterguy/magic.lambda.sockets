@@ -11,11 +11,10 @@ using magic.signals.contracts;
 namespace magic.lambda.signalr
 {
     /// <summary>
-    /// Main SignalR hub.
+    /// Main Magic SignalR hub.
     /// </summary>
     public class MagicHub : Hub
     {
-        // Signaler to use when executing files.
         readonly ISignaler _signaler;
 
         /// <summary>
@@ -27,10 +26,10 @@ namespace magic.lambda.signalr
         }
 
         /// <summary>
-        /// Signals the specified message with the specified arguments.
+        /// Executes the specified Hyperlambda file with the specified arguments.
         /// </summary>
         /// <param name="file">Hyperlambda file to execute</param>
-        /// <param name="json">Argument for invocation</param>
+        /// <param name="json">JSON arguments for invocation in string format</param>
         /// <returns>Awaitable task</returns>
         public async Task execute(string file, string json)
         {
