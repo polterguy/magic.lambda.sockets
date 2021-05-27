@@ -39,7 +39,8 @@ namespace magic.lambda.signalr
 
             // Transforming from JSON to lambda node structure.
             var node = new Node("", json);
-            _signaler.Signal("json2lambda", node);
+            if (!string.IsNullOrEmpty(json))
+                _signaler.Signal("json2lambda", node);
 
             // Executing file.
             node.Value = file;
