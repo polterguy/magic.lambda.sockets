@@ -34,7 +34,8 @@ namespace magic.lambda.signalr
         public async Task execute(string file, string json)
         {
             // Appending the correct file extension(s) to invocation.
-            file += ".signalr.hl";
+            file += ".socket.hl";
+            file = "/modules" + file;
 
             // Transforming from JSON to lambda node structure.
             var node = new Node("", json);
