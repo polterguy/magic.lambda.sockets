@@ -3,7 +3,10 @@
  * See the enclosed LICENSE file for details.
  */
 
+using System;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 using magic.node;
 using magic.node.extensions;
@@ -31,10 +34,29 @@ namespace magic.lambda.signalr
         /// <param name="input">Arguments to slot.</param>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
-            var method = input.GetEx<string>();
-            input.Value = null;
-            signaler.Signal("lambda2json", input);
-            await _context.Clients.All.SendAsync(method, input.Get<string>());
+            // Retrieving method name.
+            var method = input.GetEx<string>() ??
+                throw new ArgumentException("No method name provided to [signalr.invoke]");
+
+            // Retrieving arguments, if any.
+            var args = input.Children.FirstOrDefault(x => x.Name == "args")?.Clone();
+            string json = null;
+            if (args != null)
+            {
+                var jsonNode = new Node();
+                jsonNode.AddRange(args.Children);
+                signaler.Signal("lambda2json", jsonNode);
+                json = jsonNode.Get<string>();
+            }
+
+            // Checking if caller wants to restrict message to only users belonging to a specific role.
+            var roles = input.Children.FirstOrDefault(x => x.Name == "roles")?.GetEx<string>();
+
+            // Invoking method.
+            if (!string.IsNullOrEmpty(roles))
+                await _context.Clients.Groups(roles.Split(',')).SendAsync(method, json);
+            else
+                await _context.Clients.All.SendAsync(method, json);
         }
     }
 }

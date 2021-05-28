@@ -3,9 +3,11 @@
  * See the enclosed LICENSE file for details.
  */
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using magic.node;
+using magic.node.extensions;
 using magic.signals.contracts;
 
 namespace magic.lambda.signalr
@@ -46,5 +48,28 @@ namespace magic.lambda.signalr
             node.Value = file;
             await _signaler.SignalAsync("io.file.execute", node);
         }
+
+        #region [ -- Overridden base class methods -- ]
+
+        /*
+         * Overridden since we need to add user to all groups according to what roles user belongs to.
+         */
+        public override async Task OnConnectedAsync()
+        {
+            // Retrieving roles user belongs to.
+            var rolesNode = new Node();
+            await _signaler.SignalAsync("auth.ticket.get", rolesNode);
+            var inRoles = rolesNode.Children.FirstOrDefault(x => x.Name == "roles");
+            if (inRoles != null)
+            {
+                foreach (var idx in inRoles.Children.Select(x => x.Get<string>()))
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, idx);
+                }
+            }
+            await base.OnConnectedAsync();
+        }
+
+        #endregion
     }
 }

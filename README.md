@@ -28,8 +28,13 @@ and invoke the specified method. Below is an example.
 
 ```
 signalr.invoke:foo.bar
-   howdy:world
+   roles:root, admin
+   args
+      howdy:world
 ```
+
+The above will invoke the `foo.bar` method, passing in `{"howdy":"world"}` as a JSON string, but only users belonging
+to the roles of either `admin` or `root` will be notified. Both the **[roles]** and the **[args]** arguments are optionally.
 
 To subscribe to the above invocation, you could use something such as the following in TypeScript.
 
