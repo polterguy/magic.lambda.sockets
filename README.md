@@ -26,11 +26,11 @@ this.connection.invoke('execute', '/foo/some-hyperlambda-file', JSON.stringify({
 
 The above will resolve to a Hyperlambda file expected to exist at `/modules/foo/some-hyperlambda-file.socket.hl`,
 passing in the `foo` argument as lambda nodes. In addition you can invoke SignalR methods by signaling
-the **[sockets.invoke]** slot, which will automatically transform the specified children nodes to JSON
+the **[sockets.publish]** slot, which will automatically transform the specified children nodes to JSON
 and invoke the specified method for all subscribers. Below is an example.
 
 ```
-sockets.invoke:foo.bar
+sockets.publish:foo.bar
    roles:root, admin
    args
       howdy:world
@@ -45,6 +45,14 @@ this.connection.on('foo.bar', (args) => {
   console.log(JSON.parse(args));
 });
 ```
+
+The **[sockets.publish]** slot can handle the following optional arguments.
+
+* __[roles]__ - Comma separated list of roles to send message to
+* __[users]__ - Comma separated list of users to send message to
+* __[args]__ - Arguments to transmit to subscribers
+
+Only one of **[users]** or **[roles]** can be supplied.
 
 ## Project website
 

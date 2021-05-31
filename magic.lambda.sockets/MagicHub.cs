@@ -64,7 +64,7 @@ namespace magic.lambda.sockets
             {
                 foreach (var idx in inRoles.Children.Select(x => x.Get<string>()))
                 {
-                    await Groups.AddToGroupAsync(Context.ConnectionId, idx);
+                    await Groups.AddToGroupAsync(Context.ConnectionId, "role:" + idx);
                 }
             }
             await base.OnConnectedAsync();

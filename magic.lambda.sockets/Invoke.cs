@@ -15,10 +15,11 @@ using magic.signals.contracts;
 namespace magic.lambda.sockets
 {
     /// <summary>
-    /// [sockets.invoke] slot that allows you to publish a message to subscribers subscribing over a (web) socket connection.
+    /// [sockets.publish] slot that allows you to publish a message to subscribers
+    /// having subscribed to the specified message over a (web) socket connection.
     /// </summary>
-    [Slot(Name = "sockets.invoke")]
-    public class Invoke : ISlotAsync
+    [Slot(Name = "sockets.publish")]
+    public class Invoke : ISlot, ISlotAsync
     {
         readonly IHubContext<MagicHub> _context;
 
@@ -32,11 +33,22 @@ namespace magic.lambda.sockets
         /// </summary>
         /// <param name="signaler">Signaler that raised signal.</param>
         /// <param name="input">Arguments to slot.</param>
+        public void Signal(ISignaler signaler, Node input)
+        {
+            this.SignalAsync(signaler, input).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Slot implementation.
+        /// </summary>
+        /// <param name="signaler">Signaler that raised signal.</param>
+        /// <param name="input">Arguments to slot.</param>
+        /// <returns>Awaitable task</returns>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving method name.
             var method = input.GetEx<string>() ??
-                throw new ArgumentException("No method name provided to [sockets.invoke]");
+                throw new ArgumentException("No method name provided to [sockets.publish]");
 
             // Retrieving arguments, if any.
             var args = input.Children.FirstOrDefault(x => x.Name == "args")?.Clone();
@@ -49,14 +61,27 @@ namespace magic.lambda.sockets
                 json = jsonNode.Get<string>();
             }
 
-            // Checking if caller wants to restrict message to only users belonging to a specific role.
+            /*
+             * Checking if caller wants to restrict message to only users belonging to a specific role,
+             * or only a list of named users.
+             */
             var roles = input.Children.FirstOrDefault(x => x.Name == "roles")?.GetEx<string>();
+            var users = input.Children.FirstOrDefault(x => x.Name == "users")?.GetEx<string>();
 
             // Invoking method.
             if (!string.IsNullOrEmpty(roles))
-                await _context.Clients.Groups(roles.Split(',')).SendAsync(method, json);
+            {
+                if (users != null)
+                    throw new ArgumentException("[sockets.publish] cannot be given both a list or [roles] and a list of [users], choose only one");
+                await _context.Clients.Groups(roles.Split(',').Select(x => "role:" + x.Trim()).ToArray()).SendAsync(method, json);
+            }
             else
-                await _context.Clients.All.SendAsync(method, json);
+            {
+                if (users != null)
+                    await _context.Clients.Users(users.Split(',').Select(x => x.Trim()).ToArray()).SendAsync(method, json);
+                else
+                    await _context.Clients.All.SendAsync(method, json);
+            }
         }
     }
 }
