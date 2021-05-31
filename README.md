@@ -23,11 +23,11 @@ this.connection.invoke('execute', '/foo/some-hyperlambda-file', JSON.stringify({
 
 The above will resolve to a Hyperlambda file caller `/modules/foo/some-hyperlambda-file.socket.hl`, passing
 in the `foo` argument as lambda nodes. In addition you can invoke SignalR methods by signaling
-the **[signalr.invoke]** slot, which will automatically transform the specified children nodes to JSON
+the **[sockets.invoke]** slot, which will automatically transform the specified children nodes to JSON
 and invoke the specified method. Below is an example.
 
 ```
-signalr.invoke:foo.bar
+sockets.invoke:foo.bar
    roles:root, admin
    args
       howdy:world

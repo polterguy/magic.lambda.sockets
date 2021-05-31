@@ -36,7 +36,7 @@ namespace magic.lambda.sockets
         {
             // Retrieving method name.
             var method = input.GetEx<string>() ??
-                throw new ArgumentException("No method name provided to [signalr.invoke]");
+                throw new ArgumentException("No method name provided to [sockets.invoke]");
 
             // Retrieving arguments, if any.
             var args = input.Children.FirstOrDefault(x => x.Name == "args")?.Clone();
