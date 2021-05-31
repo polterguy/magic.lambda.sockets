@@ -7,14 +7,14 @@
     <Authors>Thomas Hansen</Authors>
     <Company>Thomas Hansen</Company>
     <Copyright>Thomas Hansen, thomas@servergardens.com</Copyright>
-    <Description>Web sockets helper project for Magic, giving you support for async sockets connections from Hyperlambda. To use package go to https://polterguy.github.io</Description>
+    <Description>Web socket helper project for Magic, giving you support for web sockets connections from and to Hyperlambda. To use package go to https://polterguy.github.io</Description>
     <PackageProjectUrl>https://github.com/polterguy/magic.lambda.sockets</PackageProjectUrl>
     <PackOnBuild>true</PackOnBuild>
     <PackageVersion>9.2.1</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/polterguy/magic.lambda.sockets.git</RepositoryUrl>
-    <PackageTags>WebSocket, sockets, SignalR</PackageTags>
+    <PackageTags>WebSockets, sockets, SignalR, Micro Services</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

@@ -2,11 +2,11 @@
 # Magic Lambda Sockets
 
 This project provides web sockets hooks for for [Magic](https://github.com/polterguy.magic).
-The main idea for the project, is that it allows you to resolve Hyperlambda files, executing these,
-passing in a URL and JSON arguments over a web socket connection, in addition to subscribing to messages
-transmitted over a web socket connection. The project builds upon SignalR, but the internals are
+The main idea of the project, is that it allows you to resolve Hyperlambda files, execute these,
+passing in a URL and JSON arguments over a web socket connection - In addition to subscribing to messages
+published by the server over a web socket connection. The project builds upon SignalR, but the internals are
 completely abstracted away, and you could probably easily exchange SignalR with any other web socket
-capable library with similar capabilities. The project contains one socket SignalR hub method with
+library with similar capabilities. The project contains one socket SignalR hub method with
 the following signature.
 
 ```
@@ -26,11 +26,11 @@ this.connection.invoke('execute', '/foo/some-hyperlambda-file', JSON.stringify({
 
 The above will resolve to a Hyperlambda file expected to exist at `/modules/foo/some-hyperlambda-file.socket.hl`,
 passing in the `foo` argument as lambda nodes. In addition you can invoke SignalR methods by signaling
-the **[sockets.publish]** slot, which will automatically transform the specified children nodes to JSON
+the **[sockets.signal]** slot, which will automatically transform the specified children nodes to JSON
 and invoke the specified method for all subscribers. Below is an example.
 
 ```
-sockets.publish:foo.bar
+sockets.signal:foo.bar
    roles:root, admin
    args
       howdy:world
@@ -46,7 +46,7 @@ this.connection.on('foo.bar', (args) => {
 });
 ```
 
-The **[sockets.publish]** slot can handle the following optional arguments.
+The **[sockets.signal]** slot can handle the following optional arguments.
 
 * __[roles]__ - Comma separated list of roles to send message to
 * __[users]__ - Comma separated list of users to send message to

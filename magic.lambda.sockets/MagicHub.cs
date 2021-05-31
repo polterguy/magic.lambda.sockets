@@ -13,7 +13,8 @@ using magic.signals.contracts;
 namespace magic.lambda.sockets
 {
     /// <summary>
-    /// Main SignalR hub.
+    /// Socket hub allowing users to invoke SignalR methods over web socket connections, to
+    /// signal subscribers of specific messages.
     /// </summary>
     public class MagicHub : Hub
     {
@@ -52,11 +53,16 @@ namespace magic.lambda.sockets
         #region [ -- Overridden base class methods -- ]
 
         /*
-         * Overridden since we need to add user to all groups according to what roles user belongs to.
+         * Overridden since we need to add user to all groups according to what roles
+         * user belongs to.
          */
         public override async Task OnConnectedAsync()
         {
-            // Retrieving roles user belongs to.
+            /*
+             * Retrieving roles user belongs to and associating
+             * user with groups resembling role names, allowing us to only signal users
+             * belonging to some specific role(s) later.
+             */
             var rolesNode = new Node();
             await _signaler.SignalAsync("auth.ticket.get", rolesNode);
             var inRoles = rolesNode.Children.FirstOrDefault(x => x.Name == "roles");

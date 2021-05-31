@@ -15,15 +15,15 @@ using magic.signals.contracts;
 namespace magic.lambda.sockets
 {
     /// <summary>
-    /// [sockets.publish] slot that allows you to publish a message to subscribers
+    /// [sockets.signal] slot that allows you to publish a message to subscribers
     /// having subscribed to the specified message over a (web) socket connection.
     /// </summary>
-    [Slot(Name = "sockets.publish")]
-    public class Invoke : ISlot, ISlotAsync
+    [Slot(Name = "sockets.signal")]
+    public class Signaler : ISlot, ISlotAsync
     {
         readonly IHubContext<MagicHub> _context;
 
-        public Invoke(IHubContext<MagicHub> context)
+        public Signaler(IHubContext<MagicHub> context)
         {
             _context = context;
         }
@@ -48,7 +48,7 @@ namespace magic.lambda.sockets
         {
             // Retrieving method name.
             var method = input.GetEx<string>() ??
-                throw new ArgumentException("No method name provided to [sockets.publish]");
+                throw new ArgumentException("No method name provided to [sockets.signal]");
 
             // Retrieving arguments, if any.
             var args = input.Children.FirstOrDefault(x => x.Name == "args")?.Clone();
@@ -72,7 +72,7 @@ namespace magic.lambda.sockets
             if (!string.IsNullOrEmpty(roles))
             {
                 if (users != null)
-                    throw new ArgumentException("[sockets.publish] cannot be given both a list or [roles] and a list of [users], choose only one");
+                    throw new ArgumentException("[sockets.signal] cannot be given both a list or [roles] and a list of [users], choose only one");
                 await _context.Clients.Groups(roles.Split(',').Select(x => "role:" + x.Trim()).ToArray()).SendAsync(method, json);
             }
             else
