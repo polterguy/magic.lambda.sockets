@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{0080EF1F-A
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "magic.lambda.signalr", "magic.lambda.signalr\magic.lambda.signalr.csproj", "{FA4C3F38-1714-4A78-8706-97C4F9FC5A4D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "magic.lambda.sockets", "magic.lambda.sockets\magic.lambda.sockets.csproj", "{FA4C3F38-1714-4A78-8706-97C4F9FC5A4D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

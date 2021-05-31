@@ -12,12 +12,12 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 
-namespace magic.lambda.signalr
+namespace magic.lambda.sockets
 {
     /// <summary>
-    /// [signalr.invoke] slot that allows you to invoke a SignalR method.
+    /// [sockets.invoke] slot that allows you to publish a message to subscribers subscribing over a (web) socket connection.
     /// </summary>
-    [Slot(Name = "signalr.invoke")]
+    [Slot(Name = "sockets.invoke")]
     public class Invoke : ISlotAsync
     {
         readonly IHubContext<MagicHub> _context;

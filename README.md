@@ -1,16 +1,16 @@
 
-# Magic Lambda SignalR
+# Magic Lambda Sockets
 
-This project provides SignalR hooks for for [Magic](https://github.com/polterguy.magic).
+This project provides web sockets hooks for for [Magic](https://github.com/polterguy.magic).
 The main idea for the project, is that it allows you to resolve Hyperlambda files, executing these,
-passing in a URL and JSON arguments over a SignalR connection. It contains one SignalR HUB method
-with the following signature.
+passing in a URL and JSON arguments over a socket connection, in addition to subscribing to messages
+transmitted over a web socket connection. It contains one socket HUB method with the following signature.
 
 ```
 execute(string file, string json)
 ```
 
-To connect to the hub use the relative URL `/signalr`, optionally passing in a JWT token, and then
+To connect to the hub use the relative URL `/sockets`, optionally passing in a JWT token, and then
 transmit messages to the hub using something such as for instance the following TypeScript.
 
 ```typescript

@@ -3,18 +3,18 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>magic.lambda.signalr</PackageId>
+    <PackageId>magic.lambda.sockets</PackageId>
     <Authors>Thomas Hansen</Authors>
     <Company>Thomas Hansen</Company>
     <Copyright>Thomas Hansen, thomas@servergardens.com</Copyright>
-    <Description>SignalR helper slots for Magic, giving you support for SignalR from Hyperlambda. To use package go to https://polterguy.github.io</Description>
-    <PackageProjectUrl>https://github.com/polterguy/magic.lambda.signalr</PackageProjectUrl>
+    <Description>Web sockets helper project for Magic, giving you support for async sockets connections from Hyperlambda. To use package go to https://polterguy.github.io</Description>
+    <PackageProjectUrl>https://github.com/polterguy/magic.lambda.sockets</PackageProjectUrl>
     <PackOnBuild>true</PackOnBuild>
     <PackageVersion>9.2.1</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/polterguy/magic.lambda.signalr.git</RepositoryUrl>
-    <PackageTags>WebSocket, sockets, signalr</PackageTags>
+    <RepositoryUrl>https://github.com/polterguy/magic.lambda.sockets.git</RepositoryUrl>
+    <PackageTags>WebSocket, sockets, SignalR</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin/Release/netstandard2.0/magic.lambda.signalr.xml</DocumentationFile>
+    <DocumentationFile>bin/Release/netstandard2.0/magic.lambda.sockets.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

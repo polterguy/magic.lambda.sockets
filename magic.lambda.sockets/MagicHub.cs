@@ -10,10 +10,10 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 
-namespace magic.lambda.signalr
+namespace magic.lambda.sockets
 {
     /// <summary>
-    /// Main Magic SignalR hub.
+    /// Main SignalR hub.
     /// </summary>
     public class MagicHub : Hub
     {
