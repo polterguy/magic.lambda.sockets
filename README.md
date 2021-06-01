@@ -10,7 +10,7 @@ library with similar capabilities. The project contains one socket SignalR hub m
 the following signature.
 
 ```
-execute(string file, string json)
+execute(string file, string json);
 ```
 
 To connect to the hub use the relative URL `/sockets`, optionally passing in a JWT token, and then
