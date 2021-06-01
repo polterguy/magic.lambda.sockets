@@ -72,15 +72,24 @@ namespace magic.lambda.sockets
             if (!string.IsNullOrEmpty(roles))
             {
                 if (users != null)
-                    throw new ArgumentException("[sockets.signal] cannot be given both a list or [roles] and a list of [users], choose only one");
-                await _context.Clients.Groups(roles.Split(',').Select(x => "role:" + x.Trim()).ToArray()).SendAsync(method, json);
+                    throw new ArgumentException("[sockets.signal] cannot be given both a list of [roles] and a list of [users], choose only one or none");
+                await _context
+                    .Clients
+                    .Groups(roles.Split(',').Select(x => "role:" + x.Trim()).ToArray())
+                    .SendAsync(method, json);
             }
             else
             {
                 if (users != null)
-                    await _context.Clients.Users(users.Split(',').Select(x => x.Trim()).ToArray()).SendAsync(method, json);
+                    await _context
+                        .Clients
+                        .Users(users.Split(',').Select(x => x.Trim()).ToArray())
+                        .SendAsync(method, json);
                 else
-                    await _context.Clients.All.SendAsync(method, json);
+                    await _context
+                        .Clients
+                        .All
+                        .SendAsync(method, json);
             }
         }
     }
