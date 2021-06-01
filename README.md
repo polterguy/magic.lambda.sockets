@@ -7,7 +7,7 @@ passing in a URL and JSON arguments over a web socket connection - In addition t
 published by the server over a web socket connection. The project builds upon SignalR, but the internals are
 completely abstracted away, and you could probably easily exchange SignalR with any other web socket
 library with similar capabilities. The project contains one socket SignalR hub method with
-the following pseudo signature.
+the following signature.
 
 ```
 execute(string file, string json)
