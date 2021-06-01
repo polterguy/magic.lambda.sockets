@@ -3,12 +3,15 @@
  * See the enclosed LICENSE file for details.
  */
 
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
+using magic.endpoint.contracts;
+using magic.node.extensions.hyperlambda;
 
 namespace magic.lambda.sockets
 {
@@ -19,13 +22,15 @@ namespace magic.lambda.sockets
     public class MagicHub : Hub
     {
         readonly ISignaler _signaler;
+        readonly IArgumentsHandler _argumentsHandler;
 
         /// <summary>
         /// Constructs an instance of your class.
         /// </summary>
-        public MagicHub(ISignaler signaler)
+        public MagicHub(ISignaler signaler, IArgumentsHandler argumentsHandler)
         {
-            _signaler = signaler;            
+            _signaler = signaler;  
+            _argumentsHandler = argumentsHandler;          
         }
 
         /// <summary>
@@ -38,16 +43,28 @@ namespace magic.lambda.sockets
         {
             // Appending the correct file extension(s) to invocation.
             file += ".socket.hl";
-            file = "/modules" + file;
+            file = "modules" + file;
+
+            // Retrieving root folder from where to resolve files.
+            var rootFolder = new Node();
+            _signaler.Signal(".io.folder.root", rootFolder);
+            file = rootFolder.Get<string>() + file;
 
             // Transforming from JSON to lambda node structure.
-            var node = new Node("", json);
+            var payload = new Node("", json);
             if (!string.IsNullOrEmpty(json))
-                _signaler.Signal("json2lambda", node);
+                _signaler.Signal("json2lambda", payload);
 
-            // Executing file.
-            node.Value = file;
-            await _signaler.SignalAsync("io.file.execute", node);
+            // Reading and parsing file as Hyperlambda.
+            using (var stream = File.OpenRead(file))
+            {
+                // Creating our lambda object and attaching arguments specified as query parameters, and/or payload.
+                var lambda = new Parser(stream).Lambda();
+                _argumentsHandler.Attach(lambda, null, payload);
+
+                // Executing file.
+                await _signaler.SignalAsync("eval", lambda);
+            }
         }
 
         #region [ -- Overridden base class methods -- ]
