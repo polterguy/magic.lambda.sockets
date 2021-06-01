@@ -18,10 +18,17 @@ transmit messages to the hub using something such as for instance the following 
 
 ```typescript
 let builder = new HubConnectionBuilder();
+
 this.connection = builder.withUrl('https://api.your-domain.com/sockets', {
     accessTokenFactory: () => 'returns-your-JWT-token-here'
   }).build();
-this.connection.invoke('execute', '/foo/some-hyperlambda-file', JSON.stringify({foo:'bar'}))
+
+this.connection.invoke(
+  'execute',
+  '/foo/some-hyperlambda-file',
+  JSON.stringify({
+    foo:'bar'
+  }));
 ```
 
 The above will resolve to a Hyperlambda file expected to exist at `/modules/foo/some-hyperlambda-file.socket.hl`,
@@ -46,7 +53,16 @@ this.connection.on('foo.bar', (args) => {
 });
 ```
 
-The **[sockets.signal]** slot can handle the following optional arguments.
+The **[sockets.signal]** slot can handle the following optional arguments but _only one_ of these can be supplied.
+If you instead of signaling all belonging to a specific role only want to signal a list of users, you can use
+something such as the following.
+
+```
+sockets.signal:foo.bar
+   users:user1, user2, user3
+   args
+      howdy:world
+```
 
 * __[roles]__ - Comma separated list of roles to send message to
 * __[users]__ - Comma separated list of users to send message to
