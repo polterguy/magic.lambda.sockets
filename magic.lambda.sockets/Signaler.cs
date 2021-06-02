@@ -56,7 +56,7 @@ namespace magic.lambda.sockets
             if (args.Roles != null)
                 await _context
                     .Clients
-                    .Groups(args.Roles)
+                    .Groups(args.Roles.Select(x => "role:" + x).ToArray())
                     .SendAsync(args.Method, args.Json);
             else if (args.Users != null)
                 await _context
