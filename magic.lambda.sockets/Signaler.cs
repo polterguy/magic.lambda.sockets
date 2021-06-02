@@ -73,7 +73,7 @@ namespace magic.lambda.sockets
         #region [ -- Private helper methods -- ]
 
         /*
-         * helper method to retrieve arguments to invocation.
+         * Helper method to retrieve arguments to invocation.
          */
         (string Method, string Json, string[] Roles, string[] Users) GetArguments(ISignaler signaler, Node input)
         {
