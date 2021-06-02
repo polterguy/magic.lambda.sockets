@@ -6,7 +6,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 using magic.node;
 using magic.node.extensions;
@@ -23,6 +22,10 @@ namespace magic.lambda.sockets
     {
         readonly IHubContext<MagicHub> _context;
 
+        /// <summary>
+        /// Creates an instance of your type.
+        /// </summary>
+        /// <param name="context">Dependency injected SignalR HUB references.</param>
         public Signaler(IHubContext<MagicHub> context)
         {
             _context = context;
@@ -47,6 +50,34 @@ namespace magic.lambda.sockets
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving method name.
+            var args = this.GetArguments(signaler, input);
+
+            // Invoking method.
+            if (args.Roles != null)
+                await _context
+                    .Clients
+                    .Groups(args.Roles)
+                    .SendAsync(args.Method, args.Json);
+            else if (args.Users != null)
+                await _context
+                    .Clients
+                    .Users(args.Users)
+                    .SendAsync(args.Method, args.Json);
+            else
+                await _context
+                    .Clients
+                    .All
+                    .SendAsync(args.Method, args.Json);
+        }
+
+        #region [ -- Private helper methods -- ]
+
+        /*
+         * helper method to retrieve arguments to invocation.
+         */
+        (string Method, string Json, string[] Roles, string[] Users) GetArguments(ISignaler signaler, Node input)
+        {
+            // Retrieving method name.
             var method = input.GetEx<string>() ??
                 throw new ArgumentException("No method name provided to [sockets.signal]");
 
@@ -65,32 +96,29 @@ namespace magic.lambda.sockets
              * Checking if caller wants to restrict message to only users belonging to a specific role,
              * or only a list of named users.
              */
-            var roles = input.Children.FirstOrDefault(x => x.Name == "roles")?.GetEx<string>();
-            var users = input.Children.FirstOrDefault(x => x.Name == "users")?.GetEx<string>();
+            var roles = input
+                .Children
+                .FirstOrDefault(x => x.Name == "roles")?
+                .GetEx<string>()?
+                .Split(',')
+                .Select(x => x.Trim())?
+                .ToArray();
+            var users = input
+                .Children
+                .FirstOrDefault(x => x.Name == "users")?
+                .GetEx<string>()?
+                .Split(',')
+                .Select(x => x.Trim())?
+                .ToArray();
 
-            // Invoking method.
-            if (!string.IsNullOrEmpty(roles))
-            {
-                if (users != null)
-                    throw new ArgumentException("[sockets.signal] cannot be given both a list of [roles] and a list of [users], choose only one or none");
-                await _context
-                    .Clients
-                    .Groups(roles.Split(',').Select(x => "role:" + x.Trim()).ToArray())
-                    .SendAsync(method, json);
-            }
-            else
-            {
-                if (users != null)
-                    await _context
-                        .Clients
-                        .Users(users.Split(',').Select(x => x.Trim()).ToArray())
-                        .SendAsync(method, json);
-                else
-                    await _context
-                        .Clients
-                        .All
-                        .SendAsync(method, json);
-            }
+            if (roles != null && users != null)
+                throw new ArgumentException("[sockets.signal] cannot be given both a list of [roles] and a list of [users], choose only one or none");
+
+            // Returning results to caller.
+            return (method, json, roles, users);
         }
+
+        #endregion
+        
     }
 }

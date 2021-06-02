@@ -69,10 +69,7 @@ namespace magic.lambda.sockets
 
         #region [ -- Overridden base class methods -- ]
 
-        /*
-         * Overridden since we need to add user to all groups according to what roles
-         * user belongs to.
-         */
+        /// <inheritdoc />
         public override async Task OnConnectedAsync()
         {
             /*
