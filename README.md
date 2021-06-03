@@ -19,7 +19,7 @@ transmit messages to the hub using something such as for instance the following 
 ```typescript
 let builder = new HubConnectionBuilder();
 
-this.connection = builder.withUrl('https://api.your-domain.com/sockets', {
+this.connection = builder.withUrl('http://localhost:55247/sockets', {
     accessTokenFactory: () => 'returns-your-JWT-token-here'
   }).build();
 
