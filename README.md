@@ -71,6 +71,11 @@ sockets.signal:foo.bar
       howdy:world
 ```
 
+Notice, if you signal a group or a list of groups, obviously you'll have to add the users to the group before
+you do. Also notice that associations between users and group(s) are only created for existing connections.
+Implying if the same user creates a _new_ connection, in for instance a new browser window, the user's new
+connection will _not_ be associated with the group the user has previously been associated with.
+
 ## Arguments to [sockets.signal]
 
 * __[roles]__ - Comma separated list of roles to send message to
@@ -78,7 +83,7 @@ sockets.signal:foo.bar
 * __[groups]__ - Comma separated list of groups to send message to
 * __[args]__ - Arguments to transmit to subscribers as JSON (string)
 
-Only one of **[users]**, **[roles]** or **[groups]** can be supplied.
+Only one of **[users]**, **[roles]** or **[groups]** can be supplied, and all the above arguments are optional.
 
 ## Groups and users
 
