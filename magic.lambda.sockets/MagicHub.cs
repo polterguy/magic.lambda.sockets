@@ -3,9 +3,11 @@
  * See the enclosed LICENSE file for details.
  */
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 using magic.node;
 using magic.node.extensions;
@@ -21,8 +23,10 @@ namespace magic.lambda.sockets
     /// </summary>
     public class MagicHub : Hub
     {
-        readonly ISignaler _signaler;
+        readonly static Dictionary<string, List<string>> _userConnections = new Dictionary<string, List<string>>();
+        readonly static object _locker = new object();
         readonly IArgumentsHandler _argumentsHandler;
+        readonly ISignaler _signaler;
 
         /// <summary>
         /// Constructs an instance of your class.
@@ -67,6 +71,20 @@ namespace magic.lambda.sockets
             }
         }
 
+        #region [ -- Internal static helper methods -- ]
+
+        internal static string[] GetConnections(string username)
+        {
+            lock (_locker)
+            {
+                if (_userConnections.TryGetValue(username, out var result))
+                    return result.ToArray();
+                return Array.Empty<string>();
+            }
+        }
+
+        #endregion
+
         #region [ -- Overridden base class methods -- ]
 
         /// <inheritdoc />
@@ -77,9 +95,9 @@ namespace magic.lambda.sockets
              * user with groups resembling role names, allowing us to only signal users
              * belonging to some specific role(s) later.
              */
-            var rolesNode = new Node();
-            await _signaler.SignalAsync("auth.ticket.get", rolesNode);
-            var inRoles = rolesNode.Children.FirstOrDefault(x => x.Name == "roles");
+            var userNode = new Node();
+            await _signaler.SignalAsync("auth.ticket.get", userNode);
+            var inRoles = userNode.Children.FirstOrDefault(x => x.Name == "roles");
             if (inRoles != null)
             {
                 foreach (var idx in inRoles.Children.Select(x => x.Get<string>()))
@@ -87,7 +105,40 @@ namespace magic.lambda.sockets
                     await Groups.AddToGroupAsync(Context.ConnectionId, "role:" + idx);
                 }
             }
+
+            /*
+             * Creating an association between a user and all connections in our shared static
+             * dictionary.
+             */
+            var username = userNode.Get<string>();
+            if (username != null)
+            {
+                // Client is authenticated a a user, associating connection with user.
+                lock (_locker)
+                {
+                    if (!_userConnections.TryGetValue(username, out var connections))
+                        connections = new List<string>();
+                    connections.Add(Context.ConnectionId);
+                }
+            }
             await base.OnConnectedAsync();
+        }
+
+        /// <inheritdoc />
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var username = Context.User?.Identity?.Name;
+            if (username != null)
+            {
+                lock (_locker)
+                {
+                    if (_userConnections.TryGetValue(username, out var connections) &&
+                        connections.Remove(Context.ConnectionId) &&
+                        connections.Count == 0)
+                        _userConnections.Remove(username);
+                }
+            }
+            await base.OnDisconnectedAsync(exception);
         }
 
         #endregion

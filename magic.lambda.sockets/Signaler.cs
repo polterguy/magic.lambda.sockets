@@ -63,6 +63,11 @@ namespace magic.lambda.sockets
                     .Clients
                     .Users(args.Users)
                     .SendAsync(args.Method, args.Json);
+            else if (args.Groups != null)
+                await _context
+                    .Clients
+                    .Groups(args.Groups.Select(x => "group:" + x).ToArray())
+                    .SendAsync(args.Method, args.Json);
             else
                 await _context
                     .Clients
@@ -75,7 +80,7 @@ namespace magic.lambda.sockets
         /*
          * Helper method to retrieve arguments to invocation.
          */
-        (string Method, string Json, string[] Roles, string[] Users) GetArguments(ISignaler signaler, Node input)
+        (string Method, string? Json, string[]? Roles, string[]? Users, string[]? Groups) GetArguments(ISignaler signaler, Node input)
         {
             // Retrieving method name.
             var method = input.GetEx<string>() ??
@@ -83,7 +88,7 @@ namespace magic.lambda.sockets
 
             // Retrieving arguments, if any.
             var args = input.Children.FirstOrDefault(x => x.Name == "args")?.Clone();
-            string json = null;
+            string? json = null;
             if (args != null)
             {
                 var jsonNode = new Node();
@@ -110,15 +115,22 @@ namespace magic.lambda.sockets
                 .Split(',')
                 .Select(x => x.Trim())?
                 .ToArray();
+            var groups = input
+                .Children
+                .FirstOrDefault(x => x.Name == "groups")?
+                .GetEx<string>()?
+                .Split(',')
+                .Select(x => x.Trim())?
+                .ToArray();
 
-            if (roles != null && users != null)
-                throw new ArgumentException("[sockets.signal] cannot be given both a list of [roles] and a list of [users], choose only one or none");
+            // Sanity checking invocation, ensuring only ONE filtering argument is specified.
+            if (new string[]?[] { roles, users, groups }.Count(x => x != null) > 1)
+                throw new ArgumentException("[sockets.signal] cannot be given both a list of [roles], [users] or [groups], choose only one or none");
 
             // Returning results to caller.
-            return (method, json, roles, users);
+            return (method, json, roles, users, groups);
         }
 
         #endregion
-        
     }
 }

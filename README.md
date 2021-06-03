@@ -53,7 +53,6 @@ this.connection.on('foo.bar', (args: string) => {
 });
 ```
 
-The **[sockets.signal]** slot can handle the following optional arguments but _only one_ of these can be supplied.
 You can also signal a list of specified users, such as the following illustrates.
 
 ```
@@ -63,13 +62,53 @@ sockets.signal:foo.bar
       howdy:world
 ```
 
+In addition to that you can signal a list of specified groups, such as the following illustrates.
+
+```
+sockets.signal:foo.bar
+   groups:group1, group2, group3
+   args
+      howdy:world
+```
+
 ## Arguments to [sockets.signal]
 
 * __[roles]__ - Comma separated list of roles to send message to
 * __[users]__ - Comma separated list of users to send message to
+* __[groups]__ - Comma separated list of groups to send message to
 * __[args]__ - Arguments to transmit to subscribers as JSON (string)
 
-Only one of **[users]** or **[roles]** can be supplied.
+Only one of **[users]**, **[roles]** or **[groups]** can be supplied.
+
+## Groups and users
+
+You can associate a user with one or more groups. This is done with the following slots.
+
+* __[sockets.user.add-to-group]__ - Adds the specified user to the specified group
+* __[sockets.user.remove-from-group]__ - Removes the specified user from the specified group
+
+**Notice** - SignalR users might have multiple connections. This implies that once you add a user to
+a group, all connections are associated with that group. Below you can find an example of how to add
+a user to a group, for then to later de-associate the user with the group.
+
+```
+// Associating a user with a group.
+sockets.user.add-to-group:some-username-here
+   group:some-group-name-here
+
+// Publishing message, now to group, such that 'some-username-here' gets it
+sockets.signal:foo.bar
+   group:some-group-name-here
+   args
+      howdy:world
+
+// De-associating the user with the group again.
+sockets.user.remove-from-group:some-username-here
+   group:some-group-name-here
+```
+
+Also notice that the message will still only be published to connections explicitly having registered an interest
+in the `foo.bar` message for our above example.
 
 ## Project website
 
