@@ -20,7 +20,7 @@ transmit messages to the hub using something such as for instance the following 
 let builder = new HubConnectionBuilder();
 
 this.connection = builder.withUrl('http://localhost:55247/sockets', {
-    accessTokenFactory: () => 'returns-your-JWT-token-here'
+    accessTokenFactory: () => 'return-your-JWT-token-here'
   }).build();
 
 this.connection.invoke(
@@ -36,7 +36,7 @@ passing in the `foo` argument as lambda nodes.
 
 ## [sockets.signal]
 
-In addition to the above, you can explicitly invoke SignalR methods by signaling the **[sockets.signal]** slot,
+In addition to the above, you can explicitly publish SignalR events by signaling the **[sockets.signal]** slot,
 which will automatically transform the specified children **[args]** nodes to JSON, and invoke the specified
 method for all connections somehow subscribing to the specified method - Allowing you to filter according
 to groups, users and roles if you wish. Below is an example.
@@ -76,10 +76,8 @@ sockets.signal:foo.bar
       howdy:world
 ```
 
-Notice, if you signal a group or a list of groups, obviously you'll have to add the users to the group before
-you do. Also notice that associations between users and group(s) are only created for existing connections.
-Implying if the same user creates a _new_ connection, in for instance a new browser window, the user's new
-connection will _not_ be associated with the group the user has previously been associated with.
+**Notice** - If you signal a group or a list of groups, you'll have to add your users to the group before
+you do.
 
 ## Arguments to [sockets.signal]
 
@@ -97,9 +95,8 @@ You can associate a user with one or more groups. This is done with the followin
 * __[sockets.user.add-to-group]__ - Adds the specified user to the specified group
 * __[sockets.user.remove-from-group]__ - Removes the specified user from the specified group
 
-**Notice** - SignalR users might have multiple connections. This implies that once you add a user to
-a group, all connections are associated with that group. Below you can find an example of how to add
-a user to a group, for then to later de-associate the user with the group.
+Below you can find an example of how to add a user to a group, for then to later de-associate
+the user with the group.
 
 ```
 // Associating a user with a group.
@@ -117,8 +114,10 @@ sockets.user.remove-from-group:some-username-here
    group:some-group-name-here
 ```
 
-Also notice that the message will still only be published to connections explicitly having registered an interest
-in the `foo.bar` message for our above example.
+**Notice** - SignalR users might have multiple connections. This implies that once you add a user to
+a group, _all_ connections are associated with that group. In addition the message will still only be
+published to connections explicitly having registered an interest in the `foo.bar` message for our
+above example, irrelevant of whether the user belongs to the group or not.
 
 ## Connection context
 
