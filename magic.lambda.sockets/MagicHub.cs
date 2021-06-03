@@ -90,11 +90,14 @@ namespace magic.lambda.sockets
             }
         }
 
-        internal static string[] GetUsers()
+        /*
+         * Returns currently connected users.
+         */
+        internal static (string Username, string[] Connections)[] GetUsers()
         {
             lock (_locker)
             {
-                return _userConnections.Keys.ToArray();
+                return _userConnections.Keys.Select(x => (x, _userConnections[x].ToArray())).ToArray();
             }
         }
 

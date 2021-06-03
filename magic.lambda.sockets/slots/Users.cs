@@ -22,7 +22,21 @@ namespace magic.lambda.sockets
         /// <param name="input">Arguments to slot.</param>
         public void Signal(ISignaler signaler, Node input)
         {
-            input.AddRange(MagicHub.GetUsers().Select(x => new Node("", x)));
+            input.Clear();
+            input.Value = null;
+            foreach (var idxUser in MagicHub.GetUsers())
+            {
+                var cur = new Node(".");
+                var username = new Node("username", idxUser.Username);
+                cur.Add(username);
+                var roles = new Node("connections");
+                foreach (var idxRole in idxUser.Connections)
+                {
+                    roles.Add(new Node(".", idxRole));
+                }
+                cur.Add(roles);
+                input.Add(cur);
+            }
         }
     }
 }
