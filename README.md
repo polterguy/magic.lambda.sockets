@@ -115,7 +115,7 @@ sockets.user.remove-from-group:some-username-here
 ```
 
 **Notice** - SignalR users might have multiple connections. This implies that once you add a user to
-a group, _all_ connections are associated with that group. In addition the message will still only be
+a group, _all_ connections are associated with that group. The message will only be
 published to connections explicitly having registered an interest in the `foo.bar` message for our
 above example, irrelevant of whether the user belongs to the group or not.
 
@@ -138,9 +138,9 @@ following slots.
 * __[sockets.connection.enter-group]__ - Associates the current connection _only_ with the specified group
 * __[sockets.connection.leave-group]__ - De-associates the current connection with the specified group
 
-Notice, if the user has other connections that are associated with the same groups, none of the other connections
-will be modified in any ways. Also realise that both of these slots can _only_ be used from within a Hyperlambda
-file executed through a SignalR socket connection somehow. Below is an example.
+If the user has additional connections, none of the other connections will be modified in any ways. Also
+realise that both of these slots can _only_ be used from within a Hyperlambda file executed through a
+SignalR socket connection somehow. Below is an example.
 
 ```
 // Retrieving connectionId
