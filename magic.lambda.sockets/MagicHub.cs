@@ -66,8 +66,12 @@ namespace magic.lambda.sockets
                 var lambda = new Parser(stream).Lambda();
                 _argumentsHandler.Attach(lambda, null, payload);
 
-                // Executing file.
-                await _signaler.SignalAsync("eval", lambda);
+                // Making sure we push the current connection information into our stack.
+                await _signaler.ScopeAsync("dynamic.sockets.connection", Context.ConnectionId, async () =>
+                {
+                    // Executing file.
+                    await _signaler.SignalAsync("eval", lambda);
+                });
             }
         }
 

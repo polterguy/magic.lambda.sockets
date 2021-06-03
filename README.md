@@ -32,9 +32,14 @@ this.connection.invoke(
 ```
 
 The above will resolve to a Hyperlambda file expected to exist at `/modules/foo/some-hyperlambda-file.socket.hl`,
-passing in the `foo` argument as lambda nodes. In addition you can invoke SignalR methods by signaling
-the **[sockets.signal]** slot, which will automatically transform the specified children nodes to JSON
-and invoke the specified method for all subscribers. Below is an example.
+passing in the `foo` argument as lambda nodes.
+
+## [sockets.signal]
+
+In addition to the above, you can explicitly invoke SignalR methods by signaling the **[sockets.signal]** slot,
+which will automatically transform the specified children **[args]** nodes to JSON, and invoke the specified
+method for all connections somehow subscribing to the specified method - Allowing you to filter according
+to groups, users and roles if you wish. Below is an example.
 
 ```
 sockets.signal:foo.bar
@@ -114,6 +119,44 @@ sockets.user.remove-from-group:some-username-here
 
 Also notice that the message will still only be published to connections explicitly having registered an interest
 in the `foo.bar` message for our above example.
+
+## Connection context
+
+From within your Hyperlambda files executed by invoking the `execute` method, you have access to
+your SignalR connectionId as a context object named _"sockets.connection"_. Below is an example of
+how to retrieve the current SignalR connectionId. Notice, this only works from _within_ a socket executed
+Hyperlambda file, implying only if you're executing the file using the `execute` method, through your
+SignalR socket connection.
+
+```
+get-context:sockets.connection
+```
+
+This might sometimes be useful, especially if you want to dynamically add only _one_ connection to a group
+for instance. To add the currently active connection explicitly to a group for instance, you can use the 
+following slots.
+
+* __[sockets.connection.enter-group]__ - Associates the current connection _only_ with the specified group
+* __[sockets.connection.leave-group]__ - De-associates the current connection with the specified group
+
+Notice, if the user has other connections that are associated with the same groups, none of the other connections
+will be modified in any ways. Also realise that both of these slots can _only_ be used from within a Hyperlambda
+file executed through a SignalR socket connection somehow. Below is an example.
+
+```
+// Retrieving connectionId
+get-context:sockets.connection
+
+// Entering group
+sockets.connection.enter-group:x:@get-context
+   group:foo-bar-group
+
+// Do stuff here that requires the user to belong to group ...
+
+// Leaving group
+sockets.connection.leave-group:x:@get-context
+   group:foo-bar-group
+```
 
 ## Project website
 

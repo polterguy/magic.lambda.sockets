@@ -11,13 +11,13 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 
-namespace magic.lambda.sockets
+namespace magic.lambda.sockets.slots
 {
     /// <summary>
-    /// [sockets.user.remove-from-group] slot that allows you to explicitly remove a user from a group.
+    /// [sockets.user.add-to-group] slot that allows you to explicitly add a user to a group.
     /// </summary>
-    [Slot(Name = "sockets.user.remove-from-group")]
-    public class RemoveUserFromGroup : ISlot, ISlotAsync
+    [Slot(Name = "sockets.user.add-to-group")]
+    public class AddUserToGroup : ISlot, ISlotAsync
     {
         readonly IHubContext<MagicHub> _context;
 
@@ -25,7 +25,7 @@ namespace magic.lambda.sockets
         /// Creates an instance of your type.
         /// </summary>
         /// <param name="context">Dependency injected SignalR HUB references.</param>
-        public RemoveUserFromGroup(IHubContext<MagicHub> context)
+        public AddUserToGroup(IHubContext<MagicHub> context)
         {
             _context = context;
         }
@@ -49,13 +49,31 @@ namespace magic.lambda.sockets
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving arguments.
-            var args = AddUserToGroup.GetArgs(input);
+            var args = GetArgs(input);
 
             // Iterating through each existing connection for user, associating user with specified group.
             foreach (var idx in MagicHub.GetConnections(args.Username))
             {
-                await _context.Groups.RemoveFromGroupAsync(idx, "group:" + args.Group);
+                await _context.Groups.AddToGroupAsync(idx, "group:" + args.Group);
             }
         }
+
+        #region [ -- Private and internal helper methods -- ]
+
+        /*
+         * Helper method to retrieve arguments to invocation.
+         */
+        internal static (string Username, string Group) GetArgs(Node input)
+        {
+            // Retrieving arguments.
+            var username = input.GetEx<string>();
+            var group = input.Children.FirstOrDefault(x => x.Name == "group")?.GetEx<string>() ??
+                throw new ArgumentException("No [group] supplied to [sockets.user.add-to-group]");
+
+            // Returning arguments to caller.
+            return (username, group);
+        }
+
+        #endregion
     }
 }

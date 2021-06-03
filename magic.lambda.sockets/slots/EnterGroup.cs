@@ -1,0 +1,80 @@
+﻿/*
+ * Magic, Copyright(c) Thomas Hansen 2019 - 2021, thomas@servergardens.com, all rights reserved.
+ * See the enclosed LICENSE file for details.
+ */
+
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+using magic.node;
+using magic.node.extensions;
+using magic.signals.contracts;
+
+namespace magic.lambda.sockets.slots
+{
+    /// <summary>
+    /// [sockets.connection.enter-group] slot that allows you to associate the current
+    /// SignalR connectionId with a group.
+    /// </summary>
+    [Slot(Name = "sockets.connection.enter-group")]
+    public class EnterGroup : ISlot, ISlotAsync
+    {
+        readonly IHubContext<MagicHub> _context;
+
+        /// <summary>
+        /// Creates an instance of your type.
+        /// </summary>
+        /// <param name="context">Dependency injected SignalR HUB references.</param>
+        public EnterGroup(IHubContext<MagicHub> context)
+        {
+            _context = context;
+        }
+
+        /// <summary>
+        /// Slot implementation.
+        /// </summary>
+        /// <param name="signaler">Signaler that raised signal.</param>
+        /// <param name="input">Arguments to slot.</param>
+        public void Signal(ISignaler signaler, Node input)
+        {
+            SignalAsync(signaler, input).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Slot implementation.
+        /// </summary>
+        /// <param name="signaler">Signaler that raised signal.</param>
+        /// <param name="input">Arguments to slot.</param>
+        /// <returns>Awaitable task</returns>
+        public async Task SignalAsync(ISignaler signaler, Node input)
+        {
+            // Retrieving arguments.
+            var args = GetArgs(signaler, input);
+
+            // Associating user with group.
+            await _context.Groups.AddToGroupAsync(args.ConnectionId, "group:" + args.Group);
+        }
+
+        #region [ -- Private and internal helper methods -- ]
+
+        /*
+         * Helper method to retrieve arguments to invocation.
+         */
+        internal static (string Group, string ConnectionId) GetArgs(ISignaler signaler, Node input)
+        {
+            // Retrieving arguments.
+            var group = input.Children.FirstOrDefault(x => x.Name == "group")?.GetEx<string>() ??
+                throw new ArgumentException("No [group] supplied to [sockets.connection.enter-group]");
+
+            // Retrieving current connectionId
+            var connectionId = signaler.Peek<string>("dynamic.sockets.connection") ??
+                throw new ArgumentException("You can only invoke [sockets.connection.enter-group] from within a socket connection");
+
+            // Returning arguments to caller.
+            return (group, connectionId);
+        }
+
+        #endregion
+    }
+}
