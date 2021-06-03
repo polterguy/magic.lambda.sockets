@@ -49,7 +49,7 @@ namespace magic.lambda.sockets.slots
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving arguments.
-            var args = GetArgs(input);
+            var args = GetArgs(input, "sockets.user.add-to-group");
 
             // Iterating through each existing connection for user, associating user with specified group.
             foreach (var idx in MagicHub.GetConnections(args.Username))
@@ -63,12 +63,12 @@ namespace magic.lambda.sockets.slots
         /*
          * Helper method to retrieve arguments to invocation.
          */
-        internal static (string Username, string Group) GetArgs(Node input)
+        internal static (string Username, string Group) GetArgs(Node input, string slot)
         {
             // Retrieving arguments.
             var username = input.GetEx<string>();
             var group = input.Children.FirstOrDefault(x => x.Name == "group")?.GetEx<string>() ??
-                throw new ArgumentException("No [group] supplied to [sockets.user.add-to-group]");
+                throw new ArgumentException($"No [group] supplied to [{slot}]");
 
             // Returning arguments to caller.
             return (username, group);

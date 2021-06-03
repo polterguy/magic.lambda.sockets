@@ -46,7 +46,7 @@ namespace magic.lambda.sockets.slots
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving arguments.
-            var args = AddUserToGroup.GetArgs(input);
+            var args = AddUserToGroup.GetArgs(input, "sockets.user.remove-from-group");
 
             // Iterating through each existing connection for user, associating user with specified group.
             foreach (var idx in MagicHub.GetConnections(args.Username))

@@ -47,7 +47,7 @@ namespace magic.lambda.sockets.slots
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving arguments.
-            var args = EnterGroup.GetArgs(signaler, input);
+            var args = EnterGroup.GetArgs(signaler, input, "sockets.connection.leave-group");
 
             // Associating user with group.
             await _context.Groups.RemoveFromGroupAsync(args.ConnectionId, "group:" + args.Group);

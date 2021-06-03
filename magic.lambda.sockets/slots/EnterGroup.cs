@@ -50,7 +50,7 @@ namespace magic.lambda.sockets.slots
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving arguments.
-            var args = GetArgs(signaler, input);
+            var args = GetArgs(signaler, input, "sockets.connection.enter-group");
 
             // Associating user with group.
             await _context.Groups.AddToGroupAsync(args.ConnectionId, "group:" + args.Group);
@@ -61,15 +61,19 @@ namespace magic.lambda.sockets.slots
         /*
          * Helper method to retrieve arguments to invocation.
          */
-        internal static (string Group, string ConnectionId) GetArgs(ISignaler signaler, Node input)
+        internal static (string Group, string ConnectionId) GetArgs(ISignaler signaler, Node input, string slot)
         {
+            // Sanity checking that value of node is null, since we might want to reserve its value for future features.
+            if (input.Value != null)
+                throw new ArgumentException($"I don't know how to utilise a value of your [{slot}] invocation");
+
             // Retrieving arguments.
             var group = input.Children.FirstOrDefault(x => x.Name == "group")?.GetEx<string>() ??
-                throw new ArgumentException("No [group] supplied to [sockets.connection.enter-group]");
+                throw new ArgumentException($"No [group] supplied to [{slot}]");
 
             // Retrieving current connectionId
             var connectionId = signaler.Peek<string>("dynamic.sockets.connection") ??
-                throw new ArgumentException("You can only invoke [sockets.connection.enter-group] from within a socket connection");
+                throw new ArgumentException($"You can only invoke [{slot}] from within a socket connection");
 
             // Returning arguments to caller.
             return (group, connectionId);
