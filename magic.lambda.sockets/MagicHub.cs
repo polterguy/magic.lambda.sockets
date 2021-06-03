@@ -77,6 +77,9 @@ namespace magic.lambda.sockets
 
         #region [ -- Internal static helper methods -- ]
 
+        /*
+         * Returns currently active connections for specified user.
+         */
         internal static string[] GetConnections(string username)
         {
             lock (_locker)
@@ -84,6 +87,14 @@ namespace magic.lambda.sockets
                 if (_userConnections.TryGetValue(username, out var result))
                     return result.ToArray();
                 return Array.Empty<string>();
+            }
+        }
+
+        internal static string[] GetUsers()
+        {
+            lock (_locker)
+            {
+                return _userConnections.Keys.ToArray();
             }
         }
 
@@ -121,15 +132,22 @@ namespace magic.lambda.sockets
                 lock (_locker)
                 {
                     if (!_userConnections.TryGetValue(username, out var connections))
+                    {
                         connections = new List<string>();
-                    connections.Add(Context.ConnectionId);
+                        connections.Add(Context.ConnectionId);
+                        _userConnections[username] = connections;
+                    }
+                    else
+                    {
+                        connections.Add(Context.ConnectionId);
+                    }
                 }
             }
             await base.OnConnectedAsync();
         }
 
         /// <inheritdoc />
-        public override async Task OnDisconnectedAsync(Exception? exception)
+        public override Task OnDisconnectedAsync(Exception? exception)
         {
             var username = Context.User?.Identity?.Name;
             if (username != null)
@@ -142,7 +160,7 @@ namespace magic.lambda.sockets
                         _userConnections.Remove(username);
                 }
             }
-            await base.OnDisconnectedAsync(exception);
+            return base.OnDisconnectedAsync(exception);
         }
 
         #endregion
