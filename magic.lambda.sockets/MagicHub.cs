@@ -127,24 +127,17 @@ namespace magic.lambda.sockets
             /*
              * Creating an association between a user and all connections in our shared static
              * dictionary.
+             *
+             * Notice, is user is not authenticated the default SignalR user ID will be used to
+             * reference the user in the dictionary.
              */
-            var username = userNode.Get<string>();
-            if (username != null)
+            var username = userNode.Get<string>() ?? Context.ConnectionId;
+            lock (_locker)
             {
-                // Client is authenticated a a user, associating connection with user.
-                lock (_locker)
-                {
-                    if (!_userConnections.TryGetValue(username, out var connections))
-                    {
-                        connections = new List<string>();
-                        connections.Add(Context.ConnectionId);
-                        _userConnections[username] = connections;
-                    }
-                    else
-                    {
-                        connections.Add(Context.ConnectionId);
-                    }
-                }
+                if (!_userConnections.TryGetValue(username, out var connections))
+                    _userConnections[username] = new List<string>(new string[] { Context.ConnectionId });
+                else
+                    connections.Add(Context.ConnectionId);
             }
             await base.OnConnectedAsync();
         }
@@ -152,16 +145,13 @@ namespace magic.lambda.sockets
         /// <inheritdoc />
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            var username = Context.User?.Identity?.Name;
-            if (username != null)
+            var username = Context.User?.Identity?.Name ?? Context.ConnectionId;
+            lock (_locker)
             {
-                lock (_locker)
-                {
-                    if (_userConnections.TryGetValue(username, out var connections) &&
-                        connections.Remove(Context.ConnectionId) &&
-                        connections.Count == 0)
-                        _userConnections.Remove(username);
-                }
+                if (_userConnections.TryGetValue(username, out var connections) &&
+                    connections.Remove(Context.ConnectionId) &&
+                    connections.Count == 0)
+                    _userConnections.Remove(username);
             }
             return base.OnDisconnectedAsync(exception);
         }
