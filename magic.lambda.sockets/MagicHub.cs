@@ -91,13 +91,39 @@ namespace magic.lambda.sockets
         }
 
         /*
-         * Returns currently connected users.
+         * Returns currently connected users according to specified filtering condition.
          */
-        internal static (string Username, string[] Connections)[] GetUsers()
+        internal static (string Username, string[] Connections)[] GetUsers(string? filter, int offset, int limit)
         {
             lock (_locker)
             {
-                return _userConnections.Keys.Select(x => (x, _userConnections[x].ToArray())).ToArray();
+                // Creating our enumerable and applying filtering accordingly.
+                IEnumerable<string> enumerable = _userConnections.Keys;
+                if (filter != null)
+                    enumerable = enumerable.Where(x => x.StartsWith(filter));
+                if (offset > 0)
+                    enumerable = enumerable.Skip(offset);
+                enumerable = enumerable.Take(10);
+
+                // Returning results to caller.
+                return enumerable.Select(x => (x, _userConnections[x].ToArray())).ToArray();
+            }
+        }
+
+        /*
+         * Returns count of currently connected users according to specified filtering condition.
+         */
+        internal static int GetUserCount(string? filter)
+        {
+            lock (_locker)
+            {
+                // Creating our enumerable and applying filtering accordingly.
+                IEnumerable<string> enumerable = _userConnections.Keys;
+                if (filter != null)
+                    enumerable = enumerable.Where(x => x.StartsWith(filter));
+
+                // Returning results to caller.
+                return enumerable.Count();
             }
         }
 
