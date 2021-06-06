@@ -122,17 +122,25 @@ above example, irrelevant of whether the user belongs to the group or not.
 ## Meta data
 
 This project also allows you to retrieve meta data about currently connected users, through for instance
-the **[sockets.users]** slot, that will return the username of all currently connected users. Notice,
-this might return a _lot_ of data to you, if you have a lot of currently connected users. An example
+the **[sockets.users]** slot and the **[sockets.users.count]** slot, that will return the username of
+all currently connected users, and the count matching your specified filter condition. An example
 of using it can be found below.
 
 ```
 sockets.users
+   filter:some-filter-condition
+   offset:3
+   limit:20
+sockets.users.count
+   filter:some-filter-condition
 ```
 
 **Notice** - If a client connected anonymously somehow over a socket, the client will (obviously)
 not have a username, and the default userId will be returned instead. Also please notice, that each
-user might have multiple connections, which the above slot does not accommodate for.
+user might have multiple connections, and this will return each connection for each username matching
+the specified filter condition.
+
+The filter conditions and paging arguments are optional, and will be `null` and `0-10` if not specified.
 
 ## Connection context
 
