@@ -50,7 +50,7 @@ namespace magic.lambda.sockets
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving method name.
-            var args = this.GetArguments(signaler, input);
+            var args = GetArguments(signaler, input);
 
             // Invoking method.
             if (args.Roles != null)
