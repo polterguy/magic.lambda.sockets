@@ -10,7 +10,7 @@
     <Description>Web socket helper project for Magic, giving you support for web sockets connections from and to Hyperlambda. To use package go to https://polterguy.github.io</Description>
     <PackageProjectUrl>https://github.com/polterguy/magic.lambda.sockets</PackageProjectUrl>
     <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>9.2.5</PackageVersion>
+    <PackageVersion>9.6.6</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/polterguy/magic.lambda.sockets.git</RepositoryUrl>
