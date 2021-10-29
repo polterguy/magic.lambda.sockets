@@ -63,7 +63,7 @@ namespace magic.lambda.sockets
             using (var stream = File.OpenRead(file))
             {
                 // Creating our lambda object and attaching arguments specified as query parameters, and/or payload.
-                var lambda = new Parser(stream).Lambda();
+                var lambda = HyperlambdaParser.Parse(stream);
                 _argumentsHandler.Attach(lambda, null, payload);
 
                 // Making sure we push the current connection information into our stack.
