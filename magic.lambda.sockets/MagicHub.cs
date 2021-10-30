@@ -13,6 +13,7 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 using magic.endpoint.contracts;
+using magic.lambda.logging.helpers;
 using magic.node.extensions.hyperlambda;
 
 namespace magic.lambda.sockets
@@ -27,14 +28,19 @@ namespace magic.lambda.sockets
         readonly static object _locker = new object();
         readonly IArgumentsHandler _argumentsHandler;
         readonly ISignaler _signaler;
+        readonly ILogger _logger;
 
         /// <summary>
         /// Constructs an instance of your class.
         /// </summary>
-        public MagicHub(ISignaler signaler, IArgumentsHandler argumentsHandler)
+        public MagicHub(
+                ISignaler signaler,
+                IArgumentsHandler argumentsHandler,
+                ILogger logger)
         {
             _signaler = signaler;  
-            _argumentsHandler = argumentsHandler;          
+            _argumentsHandler = argumentsHandler;   
+            _logger = logger;       
         }
 
         /// <summary>
@@ -46,32 +52,56 @@ namespace magic.lambda.sockets
         public async Task execute(string file, string json)
         {
             // Appending the correct file extension(s) to invocation.
+            file = file.TrimStart('/');
             file += ".socket.hl";
-            file = "modules" + file;
+
+            // Making sure we never resolve to anything outside of "/modules/" and "/system" folder.
+            if (!file.StartsWith("modules/") && !file.StartsWith("system/"))
+            {
+                // Caller tried to resolve a file outside of '/system/' and '/modules/' folder. 
+                await _logger.ErrorAsync($"Socket execute method tried to resolve an illegal file '{file}'");
+                return;
+            }
 
             // Retrieving root folder from where to resolve files.
             var rootFolder = new Node();
             _signaler.Signal(".io.folder.root", rootFolder);
             file = rootFolder.Get<string>() + file;
 
-            // Transforming from JSON to lambda node structure.
-            var payload = new Node("", json);
-            if (!string.IsNullOrEmpty(json))
-                _signaler.Signal("json2lambda", payload);
-
-            // Reading and parsing file as Hyperlambda.
-            using (var stream = File.OpenRead(file))
+            // Making sure file exists.
+            if (!File.Exists(file))
             {
-                // Creating our lambda object and attaching arguments specified as query parameters, and/or payload.
-                var lambda = HyperlambdaParser.Parse(stream);
-                _argumentsHandler.Attach(lambda, null, payload);
+                // Caller tried to resolve a non-existent file.
+                await _logger.ErrorAsync($"Socket execute method tried to resolve a non-existent file '{file}'");
+                return;
+            }
 
-                // Making sure we push the current connection information into our stack.
-                await _signaler.ScopeAsync("dynamic.sockets.connection", Context.ConnectionId, async () =>
+            // Making sure we can log exceptions
+            try
+            {
+                // Transforming from JSON to lambda node structure.
+                var payload = new Node("", json);
+                if (!string.IsNullOrEmpty(json))
+                    _signaler.Signal("json2lambda", payload);
+
+                // Reading and parsing file as Hyperlambda.
+                using (var stream = File.OpenRead(file))
                 {
-                    // Executing file.
-                    await _signaler.SignalAsync("eval", lambda);
-                });
+                    // Creating our lambda object and attaching arguments specified as query parameters, and/or payload.
+                    var lambda = HyperlambdaParser.Parse(stream);
+                    _argumentsHandler.Attach(lambda, null, payload);
+
+                    // Making sure we push the current connection information into our stack.
+                    await _signaler.ScopeAsync("dynamic.sockets.connection", Context.ConnectionId, async () =>
+                    {
+                        // Executing file.
+                        await _signaler.SignalAsync("eval", lambda);
+                    });
+                }
+            }
+            catch (Exception error)
+            {
+                await _logger.ErrorAsync($"Unhandled exception occurred during socket execute method '{file}'", error);
             }
         }
 
