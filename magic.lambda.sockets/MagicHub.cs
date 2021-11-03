@@ -26,7 +26,7 @@ namespace magic.lambda.sockets
     {
         readonly static Dictionary<string, List<string>> _userConnections = new Dictionary<string, List<string>>();
         readonly static object _locker = new object();
-        readonly IArgumentsHandler _argumentsHandler;
+        readonly IHttpArgumentsHandler _argumentsHandler;
         readonly ISignaler _signaler;
         readonly ILogger _logger;
 
@@ -35,7 +35,7 @@ namespace magic.lambda.sockets
         /// </summary>
         public MagicHub(
                 ISignaler signaler,
-                IArgumentsHandler argumentsHandler,
+                IHttpArgumentsHandler argumentsHandler,
                 ILogger logger)
         {
             _signaler = signaler;  
