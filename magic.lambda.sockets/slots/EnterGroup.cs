@@ -64,15 +64,15 @@ namespace magic.lambda.sockets.slots
         {
             // Sanity checking that value of node is null, since we might want to reserve its value for future features.
             if (input.Value != null)
-                throw new ArgumentException($"I don't know how to utilise a value of your [{slot}] invocation");
+                throw new HyperlambdaException($"I don't know how to utilise a value of your [{slot}] invocation");
 
             // Retrieving arguments.
             var group = input.Children.FirstOrDefault(x => x.Name == "group")?.GetEx<string>() ??
-                throw new ArgumentException($"No [group] supplied to [{slot}]");
+                throw new HyperlambdaException($"No [group] supplied to [{slot}]");
 
             // Retrieving current connectionId
             var connectionId = signaler.Peek<string>("dynamic.sockets.connection") ??
-                throw new ArgumentException($"You can only invoke [{slot}] from within a socket connection");
+                throw new HyperlambdaException($"You can only invoke [{slot}] from within a socket connection");
 
             // Returning arguments to caller.
             return (group, connectionId);

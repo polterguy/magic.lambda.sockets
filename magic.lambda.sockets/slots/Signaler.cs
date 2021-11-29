@@ -88,7 +88,7 @@ namespace magic.lambda.sockets
         {
             // Retrieving method name.
             var method = input.GetEx<string>() ??
-                throw new ArgumentException("No method name provided to [sockets.signal]");
+                throw new HyperlambdaException("No method name provided to [sockets.signal]");
 
             // Retrieving arguments, if any.
             var args = input.Children.FirstOrDefault(x => x.Name == "args")?.Clone();
@@ -136,7 +136,7 @@ namespace magic.lambda.sockets
 
             // Sanity checking invocation, ensuring only ONE filtering argument is specified.
             if (new string[]?[] { roles, users, clients, groups }.Count(x => x != null) > 1)
-                throw new ArgumentException("[sockets.signal] cannot be given both a list of [roles], [users], [clients] or [groups], choose only one or none");
+                throw new HyperlambdaException("[sockets.signal] cannot be given both a list of [roles], [users], [clients] or [groups], choose only one or none");
 
             // Returning results to caller.
             return (method, json, roles, users, clients, groups);

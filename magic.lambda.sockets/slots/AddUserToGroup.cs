@@ -67,7 +67,7 @@ namespace magic.lambda.sockets.slots
             // Retrieving arguments.
             var username = input.GetEx<string>();
             var group = input.Children.FirstOrDefault(x => x.Name == "group")?.GetEx<string>() ??
-                throw new ArgumentException($"No [group] supplied to [{slot}]");
+                throw new HyperlambdaException($"No [group] supplied to [{slot}]");
 
             // Returning arguments to caller.
             return (username, group);
