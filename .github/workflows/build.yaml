@@ -1,4 +1,3 @@
-name: Build
 on:
   push:
     branches:
@@ -20,6 +19,7 @@ jobs:
           sonarProjectName:  ${{ github.event.repository.name }}
           sonarOrganization: polterguy
           dotnetBuildArguments: ./${{ github.event.repository.name }}/${{ github.event.repository.name }}.csproj
+          dotnetDisableTests: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
