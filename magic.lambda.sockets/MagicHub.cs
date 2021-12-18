@@ -3,12 +3,12 @@
  */
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 using magic.node;
+using magic.node.contracts;
 using magic.node.extensions;
 using magic.signals.contracts;
 using magic.endpoint.contracts;
@@ -28,18 +28,29 @@ namespace magic.lambda.sockets
         readonly IHttpArgumentsHandler _argumentsHandler;
         readonly ISignaler _signaler;
         readonly ILogger _logger;
+        readonly IFileService _fileService;
+        readonly IRootResolver _rootResolver;
 
         /// <summary>
         /// Constructs an instance of your class.
         /// </summary>
+        /// <param name="signaler">Needed to execute lambda objects.</param>
+        /// <param name="argumentsHandler">Service responsible for attaching arguments to file executions.</param>
+        /// <param name="logger">Logger to log to</param>
+        /// <param name="fileService">Needed to resolve and load files.</param>
+        /// <param name="rootResolver">Needed to resolve root folder in system.</param>
         public MagicHub(
                 ISignaler signaler,
                 IHttpArgumentsHandler argumentsHandler,
-                ILogger logger)
+                ILogger logger,
+                IFileService fileService,
+                IRootResolver rootResolver)
         {
             _signaler = signaler;  
             _argumentsHandler = argumentsHandler;   
             _logger = logger;       
+            _fileService = fileService;
+            _rootResolver = rootResolver;
         }
 
         /// <summary>
@@ -62,13 +73,8 @@ namespace magic.lambda.sockets
                 return;
             }
 
-            // Retrieving root folder from where to resolve files.
-            var rootFolder = new Node();
-            _signaler.Signal(".io.folder.root", rootFolder);
-            file = rootFolder.Get<string>() + file;
-
             // Making sure file exists.
-            if (!File.Exists(file))
+            if (!_fileService.Exists(_rootResolver.AbsolutePath(file)))
             {
                 // Caller tried to resolve a non-existent file.
                 await _logger.ErrorAsync($"Socket execute method tried to resolve a non-existent file '{file}'");
@@ -83,20 +89,16 @@ namespace magic.lambda.sockets
                 if (!string.IsNullOrEmpty(json))
                     _signaler.Signal("json2lambda", payload);
 
-                // Reading and parsing file as Hyperlambda.
-                using (var stream = File.OpenRead(file))
-                {
-                    // Creating our lambda object and attaching arguments specified as query parameters, and/or payload.
-                    var lambda = HyperlambdaParser.Parse(stream);
-                    _argumentsHandler.Attach(lambda, null, payload);
+                // Loading file, and creating our lambda object and attaching arguments specified as query parameters, and/or payload.
+                var lambda = HyperlambdaParser.Parse(await _fileService.LoadAsync(_rootResolver.AbsolutePath(file)));
+                _argumentsHandler.Attach(lambda, null, payload);
 
-                    // Making sure we push the current connection information into our stack.
-                    await _signaler.ScopeAsync("dynamic.sockets.connection", Context.ConnectionId, async () =>
-                    {
-                        // Executing file.
-                        await _signaler.SignalAsync("eval", lambda);
-                    });
-                }
+                // Making sure we push the current connection information into our stack.
+                await _signaler.ScopeAsync("dynamic.sockets.connection", Context.ConnectionId, async () =>
+                {
+                    // Executing file.
+                    await _signaler.SignalAsync("eval", lambda);
+                });
             }
             catch (Exception error)
             {
