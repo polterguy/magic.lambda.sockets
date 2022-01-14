@@ -52,6 +52,6 @@
     <PackageReference Include="magic.node.extensions" Version="10.0.15" />
     <PackageReference Include="magic.signals.contracts" Version="10.0.15" />
     <PackageReference Include="magic.endpoint.contracts" Version="10.0.15" />
-    <PackageReference Include="magic.lambda.logging" Version="10.0.15" />
+    <PackageReference Include="magic.lambda.logging" Version="10.0.16" />
   </ItemGroup>
 </Project>
