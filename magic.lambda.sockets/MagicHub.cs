@@ -12,7 +12,7 @@ using magic.node.contracts;
 using magic.node.extensions;
 using magic.signals.contracts;
 using magic.endpoint.contracts;
-using magic.lambda.logging.helpers;
+using magic.lambda.logging.contracts;
 using magic.node.extensions.hyperlambda;
 
 namespace magic.lambda.sockets
