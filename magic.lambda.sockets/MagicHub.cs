@@ -102,7 +102,7 @@ namespace magic.lambda.sockets
             }
             catch (Exception error)
             {
-                await _logger.ErrorAsync($"Unhandled exception occurred during socket execute method '{file}'", error);
+                await _logger.ErrorAsync($"Unhandled exception occurred during socket execute method '{file}'", error.StackTrace);
             }
         }
 
