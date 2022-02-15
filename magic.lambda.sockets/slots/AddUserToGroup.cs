@@ -5,6 +5,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
@@ -17,14 +18,19 @@ namespace magic.lambda.sockets.slots
     [Slot(Name = "sockets.user.add-to-group")]
     public class AddUserToGroup : ISlot, ISlotAsync
     {
+        readonly IConfiguration _configuration;
         readonly IHubContext<MagicHub> _context;
 
         /// <summary>
         /// Creates an instance of your type.
         /// </summary>
+        /// <param name="configuration">Needed to veridy sockets are turned on.</param>
         /// <param name="context">Dependency injected SignalR HUB references.</param>
-        public AddUserToGroup(IHubContext<MagicHub> context)
+        public AddUserToGroup(
+            IConfiguration configuration,
+            IHubContext<MagicHub> context)
         {
+            _configuration = configuration;
             _context = context;
         }
 
@@ -46,6 +52,9 @@ namespace magic.lambda.sockets.slots
         /// <returns>Awaitable task</returns>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
+            // Ensuring sockets are turned on in server.
+            Utilities.ThrowIfNotEnabled(_configuration);
+
             // Retrieving arguments.
             var args = GetArgs(input, "sockets.user.add-to-group");
 

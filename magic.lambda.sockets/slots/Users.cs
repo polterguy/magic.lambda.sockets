@@ -3,11 +3,12 @@
  */
 
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 
-namespace magic.lambda.sockets
+namespace magic.lambda.sockets.slots
 {
     /// <summary>
     /// [sockets.users] slot that returns currently connected users.
@@ -15,6 +16,17 @@ namespace magic.lambda.sockets
     [Slot(Name = "sockets.users")]
     public class Users : ISlot
     {
+        readonly IConfiguration _configuration;
+
+        /// <summary>
+        /// Creates an instance of your type.
+        /// </summary>
+        /// <param name="configuration">Needed to verify sockets are turned on in server.</param>
+        public Users(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         /// <summary>
         /// Slot implementation.
         /// </summary>
@@ -22,6 +34,9 @@ namespace magic.lambda.sockets
         /// <param name="input">Arguments to slot.</param>
         public void Signal(ISignaler signaler, Node input)
         {
+            // Ensuring sockets are turned on in server.
+            Utilities.ThrowIfNotEnabled(_configuration);
+
             // Retrieving arguments.
             var args = GetArguments(input);
 

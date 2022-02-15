@@ -5,11 +5,12 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 
-namespace magic.lambda.sockets
+namespace magic.lambda.sockets.slots
 {
     /// <summary>
     /// [sockets.signal] slot that allows you to publish a message to subscribers
@@ -18,14 +19,19 @@ namespace magic.lambda.sockets
     [Slot(Name = "sockets.signal")]
     public class Signaler : ISlot, ISlotAsync
     {
+        readonly IConfiguration _configuration;
         readonly IHubContext<MagicHub> _context;
 
         /// <summary>
         /// Creates an instance of your type.
         /// </summary>
+        /// <param name="configuration">Needed to verify sockets are turned on in server.</param>
         /// <param name="context">Dependency injected SignalR HUB references.</param>
-        public Signaler(IHubContext<MagicHub> context)
+        public Signaler(
+            IConfiguration configuration,
+            IHubContext<MagicHub> context)
         {
+            _configuration = configuration;
             _context = context;
         }
 
@@ -47,6 +53,9 @@ namespace magic.lambda.sockets
         /// <returns>Awaitable task</returns>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
+            // Ensuring sockets are turned on in server.
+            Utilities.ThrowIfNotEnabled(_configuration);
+
             // Retrieving method name.
             var args = GetArguments(signaler, input);
 

@@ -4,6 +4,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using magic.node;
 using magic.signals.contracts;
 
@@ -15,14 +16,19 @@ namespace magic.lambda.sockets.slots
     [Slot(Name = "sockets.user.remove-from-group")]
     public class RemoveUserFromGroup : ISlot, ISlotAsync
     {
+        readonly IConfiguration _configuration;
         readonly IHubContext<MagicHub> _context;
 
         /// <summary>
         /// Creates an instance of your type.
         /// </summary>
+        /// <param name="configuration">Needed to verify sockets are turned on in server.</param>
         /// <param name="context">Dependency injected SignalR HUB references.</param>
-        public RemoveUserFromGroup(IHubContext<MagicHub> context)
+        public RemoveUserFromGroup(
+            IConfiguration configuration,
+            IHubContext<MagicHub> context)
         {
+            _configuration = configuration;
             _context = context;
         }
 
@@ -44,6 +50,9 @@ namespace magic.lambda.sockets.slots
         /// <returns>Awaitable task</returns>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
+            // Ensuring sockets are turned on in server.
+            Utilities.ThrowIfNotEnabled(_configuration);
+
             // Retrieving arguments.
             var args = AddUserToGroup.GetArgs(input, "sockets.user.remove-from-group");
 

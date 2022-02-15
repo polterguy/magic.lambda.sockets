@@ -4,6 +4,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using magic.node;
 using magic.signals.contracts;
 
@@ -16,14 +17,19 @@ namespace magic.lambda.sockets.slots
     [Slot(Name = "sockets.connection.leave-group")]
     public class LeaveGroup : ISlot, ISlotAsync
     {
+        readonly IConfiguration _configuration;
         readonly IHubContext<MagicHub> _context;
 
         /// <summary>
         /// Creates an instance of your type.
         /// </summary>
+        /// <param name="configuration">Needed to verify sockets are turned on in server.</param>
         /// <param name="context">Dependency injected SignalR HUB references.</param>
-        public LeaveGroup(IHubContext<MagicHub> context)
+        public LeaveGroup(
+            IConfiguration configuration,
+            IHubContext<MagicHub> context)
         {
+            _configuration = configuration;
             _context = context;
         }
 
@@ -45,6 +51,9 @@ namespace magic.lambda.sockets.slots
         /// <returns>Awaitable task</returns>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
+            // Ensuring sockets are turned on in server.
+            Utilities.ThrowIfNotEnabled(_configuration);
+
             // Retrieving arguments.
             var args = EnterGroup.GetArgs(signaler, input, "sockets.connection.leave-group");
 
